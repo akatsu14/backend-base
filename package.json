@@ -2,10 +2,10 @@
   "name": "quiz-backend",
   "version": "1.0.0",
   "description": "Backend API for Quiz Application",
-  "main": "dist/server.js",
+  "main": "src/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node src/server.js",
     "dev": "nodemon --exec ts-node src/server.ts",
     "test": "jest"
   },

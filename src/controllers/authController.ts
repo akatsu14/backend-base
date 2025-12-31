@@ -17,18 +17,19 @@ const signToken = (id: string): string => {
 };
 
 export const register = async (req: AuthRequest, res: Response) => {
+  console.log("🚀 ~ register ~ req:", req.body);
   try {
-    const { name, email, password } = req.body;
+    const { fullName, username, password } = req.body;
 
-    if (!name || !email || !password) {
+    if (!fullName || !username || !password) {
       return res
         .status(400)
         .json({ message: "Please provide all required fields" });
     }
 
     const user = await User.create({
-      name,
-      email,
+      fullName,
+      username,
       password,
     });
 
@@ -39,8 +40,8 @@ export const register = async (req: AuthRequest, res: Response) => {
       token,
       user: {
         id: user._id,
-        name: user.name,
-        email: user.email,
+        fullName: user.fullName,
+        username: user.username,
         role: user.role,
       },
     });
@@ -54,15 +55,15 @@ export const register = async (req: AuthRequest, res: Response) => {
 
 export const login = async (req: AuthRequest, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
+    if (!username || !password) {
       return res
         .status(400)
-        .json({ message: "Please provide email and password" });
+        .json({ message: "Please provide username and password" });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ username }).select("+password");
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -81,8 +82,8 @@ export const login = async (req: AuthRequest, res: Response) => {
       token,
       user: {
         id: user._id,
-        name: user.name,
-        email: user.email,
+        fullName: user.fullName,
+        username: user.username,
         role: user.role,
       },
     });
