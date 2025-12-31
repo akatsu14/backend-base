@@ -1,12 +1,19 @@
-import { Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { AuthRequest } from '../middleware/auth';
-import User from '../models/User';
+import { Response } from "express";
+import jwt, { SignOptions } from "jsonwebtoken";
+import { AuthRequest } from "../middleware/auth";
+import User from "../models/User";
 
 const signToken = (id: string): string => {
-  return jwt.sign({ id }, process.env.JWT_SECRET!, {
-    expiresIn: process.env.JWT_EXPIRE
-  });
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET is not defined");
+  }
+
+  const options: SignOptions = {
+    expiresIn: "1d" as SignOptions["expiresIn"],
+  };
+
+  return jwt.sign({ id }, secret, options);
 };
 
 export const register = async (req: AuthRequest, res: Response) => {
@@ -14,13 +21,15 @@ export const register = async (req: AuthRequest, res: Response) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Please provide all required fields' });
+      return res
+        .status(400)
+        .json({ message: "Please provide all required fields" });
     }
 
     const user = await User.create({
       name,
       email,
-      password
+      password,
     });
 
     const token = signToken(user._id.toString());
@@ -32,13 +41,13 @@ export const register = async (req: AuthRequest, res: Response) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error: any) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -48,19 +57,21 @@ export const login = async (req: AuthRequest, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Please provide email and password' });
+      return res
+        .status(400)
+        .json({ message: "Please provide email and password" });
     }
 
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const token = signToken(user._id.toString());
@@ -72,13 +83,13 @@ export const login = async (req: AuthRequest, res: Response) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        role: user.role,
+      },
     });
   } catch (error: any) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -86,7 +97,7 @@ export const login = async (req: AuthRequest, res: Response) => {
 export const logout = (req: AuthRequest, res: Response) => {
   res.status(200).json({
     success: true,
-    message: 'Logged out successfully'
+    message: "Logged out successfully",
   });
 };
 
@@ -96,12 +107,12 @@ export const getMe = async (req: AuthRequest, res: Response) => {
 
     res.status(200).json({
       success: true,
-      user
+      user,
     });
   } catch (error: any) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
